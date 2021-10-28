@@ -28,8 +28,6 @@ Categorical Variables: Urban Population (%), Mean Years of Schooling (Years), Ti
 Our team used the following libraries for this exercise:
 
 ```{r setup, include=FALSE}
-install.packages("readxl")
-install.packages("knitr")
 library(tidyverse)
 library(readxl)
 library(knitr)
@@ -37,59 +35,69 @@ library(knitr)
 
 ```{r, message=FALSE, results='hide'}
 
-VAS <- read_xls("G:/Semester 1/Quant/Quant Assignment 1/Directory/VAS Constant 2010 $ in India.xls")
+VAS <- read_xls("Directory/VAS Constant 2010 $ in India.xls", skip = 3) %>%
+  filter(`Country Name` == "India") %>%
+  pivot_longer(cols= 5:65, names_to = "Year", values_to = "VAS") %>%
+  select(Year, VAS) %>%
+  mutate(Year = as.numeric(Year))
 
-VAS <- VAS %>%
-  filter(DataSource == "India") %>%
-  select(35, 40, 45, 50, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64)
+```
+
+
+```{r, message=FALSE, results='hide'}
+
+Urban <- read_xlsx("Directory/Urban population%.xlsx", skip = 5) %>%
+  filter(Country == "India") %>%
+  mutate(across(seq(5, 29, by=2), ~ as.numeric(.))) %>%
+  pivot_longer(cols= seq(3, 29, by=2), names_to = "Year", values_to = "pct_urban") %>%
+  select(Year, pct_urban) %>%
+  mutate(Year = as.numeric(Year)) 
+
+Urban_interp <- data.frame(approx(Urban$Year, Urban$pct_urban, n = 30)) %>%
+  rename(Year = x, pct_urban = y)
+  
 
 ```
 ```{r, message=FALSE, results='hide'}
 
-Urban <- read_xlsx("G:/Semester 1/Quant/Quant Assignment 1/Directory/Urban population%.xlsx")
-
-Urban <- Urban %>%
-  filter(...2 == "India") %>%
-  select(...3, ...5, ...7, ...9, ...11, ...13, ...15, ...17, ...19, ...21, ...23, ...25, ...27, ...29)
-
-```
-```{r, message=FALSE, results='hide'}
-
-GNI <- read_xlsx("G:/Semester 1/Quant/Quant Assignment 1/Directory/GNI.xlsx")
-
-GNI <- GNI %>%
-  filter(...2 == "India") %>%
-  select(...3, ...13, ...23, ...33, ...43, ...45, ...47, ...49, ...51, ...53, ...55, ...57, ...59, ...61)
+GNI <- read_xlsx("Directory/GNI.xlsx", skip=6) %>%
+  filter(Country == "India") %>%
+  mutate(across(seq(3, 61, by=2), ~ as.numeric(.))) %>%
+  pivot_longer(cols= seq(3, 61, by=2), names_to = "Year", values_to = "GNI") %>%
+  select(Year, GNI) %>%
+  mutate(Year = as.numeric(Year))
 
 ```
 
 ```{r, message=FALSE, results='hide'}
 
-School <- read_xlsx("G:/Semester 1/Quant/Quant Assignment 1/Directory/School.xlsx")
-
-School <- School %>%
-  filter(...2 == "India") %>%
-  select(...3, ...13, ...23, ...33, ...43, ...45, ...47, ...49, ...51, ...53, ...55, ...57, ...59, ...61)
+School <- read_xlsx("Directory/School.xlsx", skip=6) %>%
+  filter(Country == "India") %>%
+  mutate(across(seq(3, 61, by=2), ~ as.numeric(.))) %>%
+  pivot_longer(cols= seq(3, 61, by=2), names_to = "Year", values_to = "School") %>%
+  select(Year, School) %>%
+  mutate(Year = as.numeric(Year))
 
 ```
 ```{r, message=FALSE, results='hide'}
 
-Internet <- read_xlsx("G:/Semester 1/Quant/Quant Assignment 1/Directory/Internet.xlsx")
+Internet <- read_xlsx("Directory/Internet.xlsx", skip = 3)
 
 Internet <- Internet %>%
-  filter(DataSource == "India") %>%
-  select(...35, ...40, ...45, ...50, ...55, ...56, ...57, ...58, ...59, ...60, ...61, ...62, ...63, ...64)
-
-
+  filter(`Country Name` == "India") %>%
+  pivot_longer(cols= 35:65, names_to = "Year", values_to = "Internet") %>%
+  select(Year, Internet) %>%
+  mutate(Year = as.numeric(Year))
 ```
 
 
 ```{r, message=FALSE, results='hide'}
 
-data <- left_join(GNI,School)%>%
+data <- left_join(GNI, School) %>%
   left_join(VAS) %>%
-  left_join(Urban) %>%
+  left_join(Urban_interp) %>%
   left_join(Internet)
+
 kable(head(data))
 
 ```
