@@ -1,0 +1,106 @@
+---
+title: "[SES 5215] Assignment_1: Research Questions"
+author: "Aeshna Prasad, Manasa Acharya, Shrinkhala Khatiwada"
+date: "10/25/2021"
+output: 
+  rmdformats::downcute
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+Since liberalization in 1990, India has experienced an almost unmatched structural transformation in terms of a movement from an agrarian economy into services, leading to a service sector boom. Multiple studies attribute this structural change to increased internet access and penetration. However, there are other possible explanatory variables like education, increase in GNI/capita, and urbanization that could have had a positive correlation with this phenomenon.  Given this, our group wishes to explore how these variables interact and the causes that could have resulted in this boom over the last three decades. 
+
+# Research Question:
+* What role did internet access play in India's service sector boom?
+* What were other variables that could have explained the service sector boom?
+
+# Sample Population:
+The selected datasets study the population and economy of India. It is possible (though not necessary) that some of these datasets do not account for the informal economy, which forms a large part of the service sector in the country.
+
+# Variables selected:
+Continuous Variables: Value added services or VAS (PPP $), GNI per capita ($), Population using internet (%)
+Categorical Variables: Urban Population (%), Mean Years of Schooling (Years), Time (Years)
+
+# Libraries
+Our team used the following libraries for this exercise:
+
+```{r setup, include=FALSE}
+install.packages("readxl")
+install.packages("knitr")
+library(tidyverse)
+library(readxl)
+library(knitr)
+```
+
+```{r, message=FALSE, results='hide'}
+
+VAS <- read_xls("G:/Semester 1/Quant/Quant Assignment 1/Directory/VAS Constant 2010 $ in India.xls")
+
+VAS <- VAS %>%
+  filter(DataSource == "India") %>%
+  select(35, 40, 45, 50, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64)
+
+```
+```{r, message=FALSE, results='hide'}
+
+Urban <- read_xlsx("G:/Semester 1/Quant/Quant Assignment 1/Directory/Urban population%.xlsx")
+
+Urban <- Urban %>%
+  filter(...2 == "India") %>%
+  select(...3, ...5, ...7, ...9, ...11, ...13, ...15, ...17, ...19, ...21, ...23, ...25, ...27, ...29)
+
+```
+```{r, message=FALSE, results='hide'}
+
+GNI <- read_xlsx("G:/Semester 1/Quant/Quant Assignment 1/Directory/GNI.xlsx")
+
+GNI <- GNI %>%
+  filter(...2 == "India") %>%
+  select(...3, ...13, ...23, ...33, ...43, ...45, ...47, ...49, ...51, ...53, ...55, ...57, ...59, ...61)
+
+```
+
+```{r, message=FALSE, results='hide'}
+
+School <- read_xlsx("G:/Semester 1/Quant/Quant Assignment 1/Directory/School.xlsx")
+
+School <- School %>%
+  filter(...2 == "India") %>%
+  select(...3, ...13, ...23, ...33, ...43, ...45, ...47, ...49, ...51, ...53, ...55, ...57, ...59, ...61)
+
+```
+```{r, message=FALSE, results='hide'}
+
+Internet <- read_xlsx("G:/Semester 1/Quant/Quant Assignment 1/Directory/Internet.xlsx")
+
+Internet <- Internet %>%
+  filter(DataSource == "India") %>%
+  select(...35, ...40, ...45, ...50, ...55, ...56, ...57, ...58, ...59, ...60, ...61, ...62, ...63, ...64)
+
+
+```
+
+
+```{r, message=FALSE, results='hide'}
+
+data <- left_join(GNI,School)%>%
+  left_join(VAS) %>%
+  left_join(Urban) %>%
+  left_join(Internet)
+kable(head(data))
+
+```
+
+The total number of observations in this dataset is 14.
+
+We are running into an issue while displaying the table and knitting the file (particularly, at the kable(head(data)) function), which could be because all datafiles had different number and format of variables. We shall try to coordinate with the TAs to resolve this issue. 
+
+# References:
+
+* Jim Gordon and Poonam Gupta,  International Monetary Fund , "Understanding India's Services Revolution" https://www.imf.org/external/np/apd/seminars/2003/newdelhi/gordon.pdf
+* Mcinsey Global Institute, "Digital India: Technology to transform a connected nation" https://www.mckinsey.com/~/media/McKinsey/Business%20Functions/McKinsey%20Digital/Our%20Insights/Digital%20India%20Technology%20to%20transform%20a%20connected%20nation/MGI-Digital-India-Report-April-2019.pdf
+* Ivan Rossignol, Parth Shri Tewari, Rosanna Chan, World Bank Blogs,  "The India Paradox: Promoting Competitive Industries in a High-Growth Country" https://blogs.worldbank.org/psd/the-india-paradox-promoting-competitive-industries-in-a-high-growth-country
+* United Nations Development Program Human Development Reports
