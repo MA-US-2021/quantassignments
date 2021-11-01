@@ -130,24 +130,23 @@ Internet_stdev <- sd(data$Internet, na.rm = TRUE)
 ## Histogram
 ```{r}
 GNI_hist <- ggplot(data) +
-  geom_histogram(aes(x = GNI),
-                 bins = 30) +
-  scale_x_continuous(trans = "log")
+  geom_histogram(aes(x = GNI), bins = 10, color = 'white') 
+
 School_hist <- ggplot(data) +
   geom_histogram(aes(x = School),
-                 bins = 30) +
-  scale_x_continuous(trans = "log")
+                 bins = 10, color = 'white') 
+
 VAS_hist <- ggplot(data) +
   geom_histogram(aes(x = VAS),
-                 bins = 30) +
-  scale_x_continuous(trans = "log")
+                 bins = 10, color = 'white') 
+
 pct_urban_hist <- ggplot(data) +
   geom_histogram(aes(x = pct_urban),
-                 bins = 30) +
-  scale_x_continuous(trans = "log")
+                 bins = 10, color = 'white') 
+
 Internet_hist <- ggplot(data) +
   geom_histogram(aes(x = Internet),
-                 bins = 30)
+                 bins = 10, color = 'white')
 ```
 
 
@@ -201,38 +200,30 @@ pretty_VAS_hist <- VAS_hist +
 
 pretty_GNI_hist <- GNI_hist +
   theme_bw() + 
-  scale_x_continuous(name = "Gross National Income Per Capita",
-                     trans = "log",
-                     breaks = c(0.1, 1, 10, 100, 1000, 10000),
-                     labels = c("0.1", "1", "10", "100", "1000", "10,000")) +
+  scale_x_continuous(name = "Gross National Income Per Capita") +
   scale_y_continuous(name = "Number of years") +
   theme(axis.text.x = element_text(angle = 90))
 
 pretty_School_hist = School_hist +
   theme_bw() +
-  scale_x_continuous(name = "Mean Years of Schooling",
-                     breaks = seq(0, 0.3, by=.05),
-                     labels = seq(0, 300, by = 50)) +
+  scale_x_continuous(name = "Mean Years of Schooling") +
   scale_y_continuous(name = "Number of Years") +
   theme(axis.text.x = element_text(angle = 90)) 
 
 pretty_pct_urban_hist = pct_urban_hist +
   theme_bw() +
-  scale_x_continuous(name = "Percentage Urban Population",
-                     breaks = seq(0, 0.3, by=.05),
-                     labels = seq(0, 300, by = 50)) +
+  scale_x_continuous(name = "Percentage Urban Population") +
   scale_y_continuous(name = "Number of Years") +
   theme(axis.text.x = element_text(angle = 90)) 
 
 pretty_Internet_hist = Internet_hist +
   theme_bw() +
-  scale_x_continuous(name = "Percentage Population Using Internet",
-                     breaks = seq(0, 0.3, by=.05),
-                     labels = seq(0, 300, by = 50)) +
+  scale_x_continuous(name = "Percentage Population Using Internet") +
   scale_y_continuous(name = "Number of Years") +
   theme(axis.text.x = element_text(angle = 90)) 
 
 grid.arrange(pretty_VAS_hist, pretty_GNI_hist, pretty_School_hist,
+             pretty_pct_urban_hist, pretty_Internet_hist,
              ncol = 3)
 ```
 
