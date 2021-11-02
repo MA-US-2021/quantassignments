@@ -223,32 +223,7 @@ grid.arrange(pretty_VAS_hist, pretty_GNI_hist, pretty_School_hist, pretty_pct_ur
 ```
 
 ## Categorical Variables
-```{r}
-pct_INC <- t.test(data$majority_vote == "INC")
-pct_BJP <-  t.test(data$majority_vote == "BJP")
-pct_Other <-  t.test(data$majority_vote == "Other")
 
-```
-
-```{r}
-cat_summary_party <- tibble(`Party in power` = 
-                              c("INC",
-                                "BJP",
-                                "Other"),
-                            `Sample proportion` = 
-                              c(pct_INC$estimate * 100,
-                                pct_BJP$estimate *100,
-                                pct_Other$estimate *100),
-                            `95-percent confidence - low` = 
-                              c(pct_INC$estimate * 100,
-                                pct_BJP$estimate *100,
-                                pct_Other$estimate *100),
-                            `95-percent confidence - high` = 
-                              c(pct_INC$estimate * 100,
-                                pct_BJP$estimate *100,
-                                pct_Other$estimate *100))
-kable(cat_summary_party, digits = 0)
-```
 ```{r}
 summary_party <- tibble(`Party in power` = 
                               c("INC",
