@@ -1,0 +1,295 @@
+---
+title: "[SES 5215] Assignment_1: Research Questions"
+author: "Aeshna Prasad, Manasa Acharya, Shrinkhala Khatiwada"
+date: "10/25/2021"
+output: 
+  rmdformats::downcute
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+Since liberalization in 1990, India has experienced an almost unmatched structural transformation in terms of a movement from an agrarian economy into services, leading to a service sector boom. Multiple studies attribute this structural change to increased internet access and penetration. However, there are other possible explanatory variables like education, increase in GNI/capita, and urbanization that could have had a positive correlation with this phenomenon.  Given this, our group wishes to explore how these variables interact and the causes that could have resulted in this boom over the last three decades. 
+
+# Research Question:
+* What role did internet access play in India's service sector boom?
+* What were other variables that could have explained the service sector boom?
+
+# Sample Population:
+The selected datasets study the population and economy of India. It is possible (though not necessary) that some of these datasets do not account for the informal economy, which forms a large part of the service sector in the country.
+
+# Variables selected:
+Continuous Variables: Value added services or VAS (PPP $), GNI per capita ($), Population using internet (%), Urban Population (%), Mean Years of Schooling (Years)
+Categorical Variables: Time (Years), Party in power each year
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(readxl)
+library(knitr)
+library(gridExtra)
+library(sjPlot)
+```
+
+
+```{r, message=FALSE, results='hide'}
+VAS <- read_xls("Directory/VAS Constant 2010 $ in India.xls", skip = 3) %>%
+  filter(`Country Name` == "India") %>%
+  pivot_longer(cols= 5:65, names_to = "Year", values_to = "VAS") %>%
+  select(Year, VAS) %>%
+  mutate(Year = as.numeric(Year))
+```
+
+
+```{r, message=FALSE, results='hide'}
+Urban <- read_xlsx("Directory/Urban population%.xlsx", skip = 5) %>%
+  filter(Country == "India") %>%
+  mutate(across(seq(5, 29, by=2), ~ as.numeric(.))) %>%
+  pivot_longer(cols= seq(3, 29, by=2), names_to = "Year", values_to = "pct_urban") %>%
+  select(Year, pct_urban) %>%
+  mutate(Year = as.numeric(Year)) 
+Urban_interp <- data.frame(approx(Urban$Year, Urban$pct_urban, n = 30)) %>%
+  rename(Year = x, pct_urban = y)
+  
+```
+```{r, message=FALSE, results='hide'}
+GNI <- read_xlsx("Directory/GNI.xlsx", skip=6) %>%
+  filter(Country == "India") %>%
+  mutate(across(seq(3, 61, by=2), ~ as.numeric(.))) %>%
+  pivot_longer(cols= seq(3, 61, by=2), names_to = "Year", values_to = "GNI") %>%
+  select(Year, GNI) %>%
+  mutate(Year = as.numeric(Year))
+```
+
+```{r, message=FALSE, results='hide'}
+School <- read_xlsx("Directory/School.xlsx", skip=6) %>%
+  filter(Country == "India") %>%
+  mutate(across(seq(3, 61, by=2), ~ as.numeric(.))) %>%
+  pivot_longer(cols= seq(3, 61, by=2), names_to = "Year", values_to = "School") %>%
+  select(Year, School) %>%
+  mutate(Year = as.numeric(Year))
+```
+```{r, message=FALSE, results='hide'}
+Internet <- read_xlsx("Directory/Internet.xlsx", skip = 3)
+Internet <- Internet %>%
+  filter(`Country Name` == "India") %>%
+  pivot_longer(cols= 35:65, names_to = "Year", values_to = "Internet") %>%
+  select(Year, Internet) %>%
+  mutate(Year = as.numeric(Year))
+```
+
+## Summary table
+```{r, message=FALSE, results='hide'}
+data <- left_join(GNI, School) %>%
+  left_join(VAS) %>%
+  left_join(Urban_interp) %>%
+  left_join(Internet) %>%
+  mutate(party_in_power = c(rep("Other", 1), 
+                           rep("INC", 5), 
+                           rep("Other", 2), 
+                           rep("BJP", 6),
+                           rep("INC", 10),
+                           rep("BJP", 6)))
+kable(head(data))
+```
+
+The total number of observations in this dataset is 30.
+
+## 95% Confidence Interval
+```{r}
+GNI_t_test <- t.test(data$GNI)
+School_t_test <- t.test(data$School)
+VAS_t_test <- t.test(data$VAS)
+pct_urban_t_test <- t.test(data$pct_urban)
+Internet_t_test <- t.test(data$Internet)
+```
+
+
+## Quartiles
+```{r}
+GNI_quartiles <- quantile(data$GNI, na.rm = TRUE)
+School_quartiles <- quantile(data$School, na.rm = TRUE)
+VAS_quartiles <- quantile(data$VAS, na.rm = TRUE)
+pct_urban_quartiles <- quantile(data$pct_urban, na.rm = TRUE)
+Internet_quartiles <- quantile(data$Internet, na.rm = TRUE)
+```
+
+
+## Standard Deviations
+```{r}
+GNI_stdev <- sd(data$GNI, na.rm = TRUE)
+School_stdev <- sd(data$School, na.rm = TRUE)
+VAS_stdev <- sd(data$VAS, na.rm = TRUE)
+pct_urban_stdev <- sd(data$pct_urban, na.rm = TRUE)
+Internet_stdev <- sd(data$Internet, na.rm = TRUE)
+```
+
+
+## Histogram
+```{r}
+GNI_hist <- ggplot(data) +
+  geom_histogram(aes(x = GNI), bins = 10, color = 'white')
+School_hist <- ggplot(data) +
+  geom_histogram(aes(x = School),
+                 bins = 10, color = 'white')
+VAS_hist <- ggplot(data) +
+  geom_histogram(aes(x = VAS),
+                 bins = 10, color = 'white')
+pct_urban_hist <- ggplot(data) +
+  geom_histogram(aes(x = pct_urban),
+                 bins = 10, color = 'white')
+Internet_hist <- ggplot(data) +
+  geom_histogram(aes(x = Internet),
+                 bins = 10, color = 'white')
+```
+
+
+## Summary table
+```{r}
+cont_summary <- tibble(
+  Variable = c("VAS", "GNI", 
+               "Mean Years of Schooling", 
+               "Percent Urban Population", "Percent of population using Internet"),
+  `Sample mean` = c(VAS_t_test$estimate,
+                    GNI_t_test$estimate,
+                    School_t_test$estimate,
+                    pct_urban_t_test$estimate,
+                    Internet_t_test$estimate),
+  `Population mean (95% confidence) - low` = 
+    c(VAS_t_test$conf.int[1],
+      GNI_t_test$conf.int[1],
+      School_t_test$conf.int[1],
+      pct_urban_t_test$conf.int[1],
+      Internet_t_test$conf.int[1]) * 100,
+  `Population mean (95% confidence) - high` =
+    c(VAS_t_test$conf.int[2],
+      GNI_t_test$conf.int[2],
+      School_t_test$conf.int[2],
+      pct_urban_t_test$conf.int[2],
+      Internet_t_test$conf.int[2]) * 100,
+  Median = c(VAS_quartiles[3],
+             GNI_quartiles[3],
+             School_quartiles[3],
+             pct_urban_quartiles[3],
+             Internet_quartiles[3] * 100),
+  `Interquartile range` = c(VAS_quartiles[4] - VAS_quartiles[2],
+                            GNI_quartiles[4] - GNI_quartiles[2],
+                            School_quartiles[4] - School_quartiles[2],
+                            pct_urban_quartiles[4] - pct_urban_quartiles[2],
+                            (Internet_quartiles[4] - Internet_quartiles[2]) * 100),
+  `Standard deviation` = c(VAS_stdev,
+                          GNI_stdev,
+                          School_stdev,
+                          pct_urban_stdev,
+                          Internet_stdev * 1000))
+kable(cont_summary, digits = 0)
+```
+## Histogram table
+```{r}
+pretty_VAS_hist <- VAS_hist +
+  theme_bw() +
+  scale_x_continuous(name = "Value Added Services ($ PPP 2010)") +
+  scale_y_continuous(name = "Number of years") +
+  theme(axis.text.x = element_text(angle = 90))
+
+pretty_GNI_hist <- GNI_hist +
+  theme_bw() + 
+  scale_x_continuous(name = "Gross National Income Per Capita") +
+  scale_y_continuous(name = "Number of years") +
+  theme(axis.text.x = element_text(angle = 90))
+
+pretty_School_hist = School_hist +
+  theme_bw() +
+  scale_x_continuous(name = "Mean Years of Schooling") +
+  scale_y_continuous(name = "Number of Years") +
+  theme(axis.text.x = element_text(angle = 90)) 
+
+pretty_pct_urban_hist = pct_urban_hist +
+  theme_bw() +
+  scale_x_continuous(name = "Percentage Urban Population") +
+  scale_y_continuous(name = "Number of Years") +
+  theme(axis.text.x = element_text(angle = 90)) 
+
+pretty_Internet_hist = Internet_hist +
+  theme_bw() +
+  scale_x_continuous(name = "Percentage Population Using Internet") +
+  scale_y_continuous(name = "Number of Years") +
+  theme(axis.text.x = element_text(angle = 90)) 
+
+grid.arrange(pretty_VAS_hist, pretty_GNI_hist, pretty_School_hist, pretty_pct_urban_hist, pretty_Internet_hist,
+             ncol = 3)
+```
+
+## Categorical Variables
+
+```{r}
+summary_party <- tibble(`Party in power` = 
+                              c("INC",
+                                "BJP",
+                                "Other"),
+                            `Number of years in power between 1990 and 2019` = 
+                              c(sum(data$party_in_power == 'INC'),
+                                sum(data$party_in_power == 'BJP'),
+                                sum (data$party_in_power == 'Other')))
+            
+kable(summary_party, digits = 0)
+```
+```{r}
+ggplot(summary_party) +
+  geom_bar(aes(x = `Party in power`, 
+               y = `Number of years in power between 1990 and 2019`),
+           stat = "identity") +
+  scale_y_continuous(name = "Number of years in power between 1990 and 2019",
+                     breaks = c(0, 4, 8, 12, 16)) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90)) 
+```
+
+# Linear regression models - Relationship between VAS and other variables:
+
+## Service sector and Urbanization
+The regression below displays a highly statistically significant relationship between the service sector's growth in India and the country's urbanization, as indicated by the extremely small p-value. The relationship between the two variables in positive while the intercept is negative. The high R squared value suggests that 96% of the variance in India's service sector can be explained by the change in percentage of population living in cities.The relationship between these two variables seems to be one of the strongest among the selected variables.
+
+```{r}
+Urban_lr <- lm(VAS ~ pct_urban, data = data)
+
+summary(Urban_lr)
+
+```
+
+
+## Service sector and Internet
+Similarly, we can observe a highly statistically significant and highly positive relationship between the service sector's growth in India and internet coverage as well. With a p-value that is close to 0, the model suggests that we can confidently predict that 84% (i.e. R squared) of the growth of India's service sector can be explained by the growth of proportion of population with internet.
+
+```{r}
+Internet_lr <- lm(VAS ~ Internet, data = data)
+summary(Internet_lr)
+
+```
+## Service sector and Mean Years of Schooling
+Additionally, a large part of the variance in the Indian service sector boom (92%) can be explained by the growth in mean years of schooling through a statistically significant positive relationship. The p-value is close to 0, as in the case of the previous regressions.
+
+```{r}
+School_lr <- lm(VAS ~ School, data = data)
+summary(School_lr)
+```
+
+```{r}
+GNI_lr <- lm(VAS ~ GNI, data = data)
+summary(GNI_lr)
+
+```
+```{r}
+party_in_power_lr <- lm(VAS ~ party_in_power, data = data)
+summary(party_in_power_lr)
+```
+
+
+
+# References:
+
+* Jim Gordon and Poonam Gupta,  International Monetary Fund , "Understanding India's Services Revolution" https://www.imf.org/external/np/apd/seminars/2003/newdelhi/gordon.pdf
+* Mcinsey Global Institute, "Digital India: Technology to transform a connected nation" https://www.mckinsey.com/~/media/McKinsey/Business%20Functions/McKinsey%20Digital/Our%20Insights/Digital%20India%20Technology%20to%20transform%20a%20connected%20nation/MGI-Digital-India-Report-April-2019.pdf
+* Ivan Rossignol, Parth Shri Tewari, Rosanna Chan, World Bank Blogs,  "The India Paradox: Promoting Competitive Industries in a High-Growth Country" https://blogs.worldbank.org/psd/the-india-paradox-promoting-competitive-industries-in-a-high-growth-country
+* United Nations Development Program Human Development Reports
